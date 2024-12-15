@@ -55,11 +55,11 @@ class Player(pygame.sprite.Sprite):
     def move(self, keys):
         self.is_moving = True
         if keys[pygame.K_d] and pX < scrW-self.rect.w:
-            print("Key D pressed")
+            # print("Key D pressed")
             self.step = pStepSize
             self.is_facing_left = False
         elif keys[pygame.K_a] and pX > 0:
-            print("Key A pressed")
+            # print("Key A pressed")
             self.step = -pStepSize
             self.is_facing_left = True
         else:
@@ -71,61 +71,18 @@ class Player(pygame.sprite.Sprite):
         global pFrameCount
         pFrameCount = (pFrameCount % pFramePerStep) + 1
         if self.is_moving:
-            print("Player is moving")
-            if pFrameCount == 2:
+            # print("Player is moving")
+            if pFrameCount == 2:   # 2 frame delay before moving
                 self.current = (self.current % 2) + 1
                 pX += self.step
-            print(f"Player frame count = {pFrameCount}\nPlayer Sprite no. = {self.current}")
-            self.image = self.sprites[self.current]   # update player image
+        else:
+            self.current = 0
+        self.image = self.sprites[self.current]  # update player image
         if self.is_facing_left:
-            print("Player facing left.")
+            # print("Player facing left.")
             self.image = pygame.transform.flip(self.sprites[self.current], True, False)
         self.rect = self.image.get_rect()
         self.rect.topleft = (pX, pY)
-
-"""pSprites = []
-pSprites += [pygame.image.load("Images/Bill/standing.png")]
-pSprites += [pygame.image.load("Images/Bill/running_1.png")]
-pSprites += [pygame.image.load("Images/Bill/running_1.png")]
-print(pSprites)
-pW = 128   # Sprite width
-pH = 128   # Sprite height
-pX = 128   # player starting position
-pY = scrH - floorH - pW   # player is on a floor
-pV = 0
-pFacingLeft = False
-pMoving = False
-pCurr = 0
-pSprite = pSprites[pCurr]
-framePerStep = 10
-fCount = 1
-
-def player(keys):
-    global pSprite, pX, pV, pFacingLeft, pMoving, pCurr
-    global framePerStep, fCount
-    # Player movement
-    pMoving = True
-    if keys[pygame.K_a] and pX > 0:
-        pFacingLeft = True
-        pV = -4
-    if keys[pygame.K_d] and pX < scrW - pW:
-        pFacingLeft = False
-        pV = 4
-    else:
-        pV = 0
-        pMoving = False
-    print(pMoving)
-    # Player animation
-    if pMoving:
-        fCount = (fCount // framePerStep) + 1
-        if fCount==2:
-            pCurr = (pCurr // 2) + 1
-            pX += pV
-    if pFacingLeft:
-        pSprite = pygame.transform.flip(pSprites[pCurr], True, False)
-    else:
-        pSprite = pSprites[pCurr]
-    screen.blit(pSprite, (pX, pY))"""
 
 charactersGroup = pygame.sprite.Group()
 
@@ -152,15 +109,14 @@ while running:
         else:
             pass
     keys_down = pygame.key.get_pressed()
-    player.move(keys_down)
+    player.move(keys_down)   # user input
 
-    screen.fill((0, 0, 0))  # default black background
-    background(0)  # game background
+    screen.fill((0, 0, 0))   # default black background
+    background(0)   # game background
 
-    charactersGroup.update()
-    charactersGroup.draw(screen)
-    """keysEvent = pygame.key.get_pressed()
-    player(keysEvent)"""
+    charactersGroup.update()   # update sprites
+    charactersGroup.draw(screen)   # draw sprites
+
     clock.tick(30)   # frame rate
     pygame.display.flip()  # update game screen
 
