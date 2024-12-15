@@ -1,5 +1,6 @@
 # MODULES
 import pygame
+import random
 
 # INITIALISE
 pygame.init()   # initialise pygame
@@ -27,11 +28,6 @@ floorH = 64
 
 # Player
 pW, pH = 128, 128   # Sprite dimensions
-pX = 128   # player starting position
-pY = scrH - floorH - pW   # player is on a floor
-pStepSize = 32
-pFramePerStep = 10
-pFrameCount = 0
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -41,64 +37,104 @@ class Player(pygame.sprite.Sprite):
         self.sprites.append(pygame.image.load("Images/Bill/standing.png"))
         self.sprites.append(pygame.image.load("Images/Bill/running_1.png"))
         self.sprites.append(pygame.image.load("Images/Bill/running_2.png"))
-        # Initial player sprite
+        # Initial player sprite image
         self.current = 0
         self.image = self.sprites[self.current]
-        # Initial player position
+        # Player position
+        self.x = 128
+        self.y = scrH - floorH - pH
         self.rect = self.image.get_rect()
-        self.rect.topleft = (pX, pY)
-        # Initial player direction and movement
+        self.rect.topleft = (self.x, self.y)
+        # Player direction and motion
         self.is_facing_left = False
         self.is_moving = False
+        # Player movement and velocity
+        self.xvel = 32
         self.step = 0
+        self.frame_per_step = 5
+        self.frame_count = 0
+        # Initial player hitbox
+        self.hitbox = (self.x + 48, self.y + 16, 32, 112)
 
     def move(self, keys):
         self.is_moving = True
-        if keys[pygame.K_d] and pX < scrW-self.rect.w:
-            # print("Key D pressed")
-            self.step = pStepSize
+        if keys[pygame.K_d] and self.x < scrW-self.rect.w:
+            self.step = self.xvel
             self.is_facing_left = False
-        elif keys[pygame.K_a] and pX > 0:
-            # print("Key A pressed")
-            self.step = -pStepSize
+        elif keys[pygame.K_a] and self.x > 0:
+            self.step = -self.xvel
             self.is_facing_left = True
         else:
             self.step = 0
             self.is_moving = False
 
     def update(self):
-        global pX
-        global pFrameCount
-        pFrameCount = (pFrameCount % pFramePerStep) + 1
+        self.frame_count = (self.frame_count % self.frame_per_step) + 1
+        # Update player position
         if self.is_moving:
-            # print("Player is moving")
-            if pFrameCount == 2:   # 2 frame delay before moving
+            if self.frame_count == 2:   # 2 frame delay before moving
                 self.current = (self.current % 2) + 1
-                pX += self.step
+                self.x += self.step
         else:
             self.current = 0
-        self.image = self.sprites[self.current]  # update player image
+        # Update player sprite image
+        self.image = self.sprites[self.current]
         if self.is_facing_left:
-            # print("Player facing left.")
             self.image = pygame.transform.flip(self.sprites[self.current], True, False)
         self.rect = self.image.get_rect()
-        self.rect.topleft = (pX, pY)
+        self.rect.topleft = (self.x, self.y)
+        # Update player hitbox
+        self.hitbox = (self.x + 48, self.y + 16, 32, 112)
+
+# Enemy
+eW, eH = 64, 64
+
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.is_moving = False
+        self.sprites = []
+        self.sprites.append(pygame.image.load("Images/NAO/marching_1.png"))
+        self.sprites.append(pygame.image.load("Images/NAO/marching_2.png"))
+        # Initial enemy sprite
+        self.current = 0
+        self.image = self.sprites[self.current]
+        # Enemy position
+        self.x = random.randint(384, scrW-eW)
+        self.y = scrH - floorH - eH
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (self.x, self.y)
+        # Enemy movement
+        self.xvel = 16
+        self.step = -self.xvel
+        self.frame_per_step = 5
+        self.frame_count = 0
+        # Initial enemy hitbox
+        self.hitbox = (self.x + 12, self.y, 40, 64)
+
+    def update(self):
+        self.frame_count = (self.frame_count % self.frame_per_step) + 1
+        if self.frame_count == 2:
+            # Update enemy sprite image
+            self.current = (self.current + 1) % 2
+            self.image = self.sprites[self.current]
+            # Update enemy position
+            self.x += self.step
+            self.rect = self.image.get_rect()
+            self.rect.topleft = (self.x, self.y)
+            # Update enemy hitbox
+            self.hitbox = (self.x + 12, self.y, 40, 64)
 
 charactersGroup = pygame.sprite.Group()
+enemies = pygame.sprite.Group()
 
 player = Player()
 charactersGroup.add(player)
 
-# Enemy
-class Enemy(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-
-    def update(self):
-        pass
-
-def enemy_activate():
-    pass
+for i in range(5):
+    enemy = Enemy()
+    enemies.add(enemy)
+    charactersGroup.add(enemy)
 
 # GAME LOOP
 running = True
