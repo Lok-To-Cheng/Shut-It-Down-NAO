@@ -54,7 +54,7 @@ class Player(pygame.sprite.Sprite):
         self.frame_per_step = 5
         self.frame_count = 0
         # Initial player hitbox
-        self.hitbox = (self.x + 48, self.y + 16, 32, 112)
+        self.hitbox = pygame.rect.Rect(self.x + 48, self.y + 16, 32, 112)
 
     def move(self, keys):
         self.is_moving = True
@@ -67,6 +67,11 @@ class Player(pygame.sprite.Sprite):
         else:
             self.step = 0
             self.is_moving = False
+
+    def is_hit(self):
+        for e in enemies:
+            if self.hitbox.x < e.hitbox.x < (self.hitbox.x + self.hitbox.w):
+                return True
 
     def update(self):
         self.frame_count = (self.frame_count % self.frame_per_step) + 1
@@ -83,8 +88,18 @@ class Player(pygame.sprite.Sprite):
             self.image = pygame.transform.flip(self.sprites[self.current], True, False)
         self.rect = self.image.get_rect()
         self.rect.topleft = (self.x, self.y)
+        # Update player health points
+        if self.is_hit():
+            print("Bill: ""I'm hit!""")
         # Update player hitbox
-        self.hitbox = (self.x + 48, self.y + 16, 32, 112)
+        self.hitbox = pygame.rect.Rect(self.x + 48, self.y + 16, 32, 112)
+
+# Bullet
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.image.load("Images/bullets/staple.png").convert_alpha()
+
 
 # Enemy
 eW, eH = 64, 64
@@ -110,7 +125,7 @@ class Enemy(pygame.sprite.Sprite):
         self.frame_per_step = 5
         self.frame_count = 0
         # Initial enemy hitbox
-        self.hitbox = (self.x + 12, self.y, 40, 64)
+        self.hitbox = pygame.rect.Rect(self.x + 12, self.y, 40, 64)
 
     def update(self):
         self.frame_count = (self.frame_count % self.frame_per_step) + 1
@@ -123,18 +138,18 @@ class Enemy(pygame.sprite.Sprite):
             self.rect = self.image.get_rect()
             self.rect.topleft = (self.x, self.y)
             # Update enemy hitbox
-            self.hitbox = (self.x + 12, self.y, 40, 64)
+            self.hitbox = pygame.rect.Rect(self.x + 12, self.y, 40, 64)
 
-charactersGroup = pygame.sprite.Group()
+movingSprites = pygame.sprite.Group()
 enemies = pygame.sprite.Group()
 
 player = Player()
-charactersGroup.add(player)
+movingSprites.add(player)
 
 for i in range(5):
     enemy = Enemy()
     enemies.add(enemy)
-    charactersGroup.add(enemy)
+    movingSprites.add(enemy)
 
 # GAME LOOP
 running = True
@@ -150,8 +165,8 @@ while running:
     screen.fill((0, 0, 0))   # default black background
     background(0)   # game background
 
-    charactersGroup.update()   # update sprites
-    charactersGroup.draw(screen)   # draw sprites
+    movingSprites.update()   # update sprites
+    movingSprites.draw(screen)   # draw sprites
 
     clock.tick(30)   # frame rate
     pygame.display.flip()  # update game screen
