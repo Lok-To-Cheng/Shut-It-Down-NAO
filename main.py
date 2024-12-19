@@ -22,19 +22,20 @@ class Game:
         pygame.display.set_caption(self.title)
         self.icon = pygame.image.load("icon/NAO Icon.png")  # icon
         pygame.display.set_icon(self.icon)
-        # Title screen background
-        title_background_img = pygame.image.load("Images/MCS.png")
-        self.title_background = pygame.transform.scale(title_background_img, (SCREEN_WIDTH, SCREEN_HEIGHT))
-        # Level backgrounds
+        # Sprite groups
+        self.all_sprites = pygame.sprite.LayeredUpdates()
+        self.backgrounds = pygame.sprite.LayeredUpdates()
+        self.enemies = pygame.sprite.LayeredUpdates()
+        self.attacks = pygame.sprite.LayeredUpdates()
 
     def new(self, lvl_no):
         self.playing = True   # Player is playing
-        # Sprites
-        self.all_sprites = pygame.sprite.LayeredUpdates()
-        self.level_backgrounds = pygame.sprite.LayeredUpdates()
-        self.enemies = pygame.sprite.LayeredUpdates()
-        self.attacks = pygame.sprite.LayeredUpdates()
-        # Player
+        # Background, Enemies, Player
+        self.background = Background(self, lvl_no)
+        if lvl_no==0:
+            pass
+        else:
+            pass
         self.player = Player(self, lvl_no)
 
     def events(self):
@@ -42,12 +43,24 @@ class Game:
             if event.type == pygame.QUIT:
                 self.playing = False
                 self.running = False
-        keys_down = pygame.key.get_pressed()
-        player.move(keys_down)  # user input into player movement
-        if keys_down[pygame.K_SPACE]:
-            staple = player.shoot()
-            movingSprites.add(staple)
-            bullets.add(staple)
+
+    def scroll(self, speed):
+        if speed < 0:   # scroll to the left
+            if (self.background.rect.x < 0):
+                if (self.player.x < SCROLL_THRESHOLD):
+                    for sprite in self.all_sprites:
+                        sprite.rect.x -= speed
+                    return True
+                return False
+            return False
+        else:    # scroll to the right
+            if (self.background.rect.x > SCREEN_WIDTH - self.background.rect.width):
+                if (self.player.x > SCROLL_THRESHOLD):
+                    for sprite in self.all_sprites:
+                        sprite.rect.x -= speed
+                    return True
+                return False
+            return False
 
     def update(self):
         self.all_sprites.update()
@@ -70,13 +83,14 @@ class Game:
 
     def title_screen(self):
         intro = True
+        self.background = Background(self)
         title_row1 = self.font.render("Shut It Down", 8)
         title_row2 = self.font.render("NAO", 16, RED)
         hint = self.font.render("CLICK YELLOW DOOR TO START", 4, YELLOW)
         door_button = Button(768, 496, 64, 80, YELLOW)
         while intro:
             self.screen.fill(BLACK)
-            self.screen.blit(self.title_background, (0, 0))
+            self.screen.blit(self.background.image, (0, 0))
             mouse_pos = pygame.mouse.get_pos()
             mouse_pressed = pygame.mouse.get_pressed()
             # Draw screen
@@ -95,7 +109,7 @@ class Game:
 
 game = Game()
 game.title_screen()
-game.new(0)
+game.new(1)
 while game.running:
     game.start()
     game.over()

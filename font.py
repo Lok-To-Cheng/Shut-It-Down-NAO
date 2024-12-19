@@ -3,7 +3,7 @@ from config import SCREEN_WIDTH, SCREEN_HEIGHT, BLACK, RED, WHITE
 from functions import *
 
 pygame.init()
-font_screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+# font_screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 class Font:
     def __init__(self):
