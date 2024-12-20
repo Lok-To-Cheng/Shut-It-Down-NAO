@@ -22,21 +22,28 @@ class Game:
         pygame.display.set_caption(self.title)
         self.icon = pygame.image.load("icon/NAO Icon.png")  # icon
         pygame.display.set_icon(self.icon)
+        # Game starts at Level 0
+        self.level = 1
         # Sprite groups
         self.all_sprites = pygame.sprite.LayeredUpdates()
         self.backgrounds = pygame.sprite.LayeredUpdates()
         self.enemies = pygame.sprite.LayeredUpdates()
         self.attacks = pygame.sprite.LayeredUpdates()
 
-    def new(self, lvl_no):
+    def new(self):
         self.playing = True   # Player is playing
         # Background, Enemies, Player
-        self.background = Background(self, lvl_no)
-        if lvl_no==0:
-            pass
+        self.background = Background(self, self.level)
+        if self.level==0:
+            for i in range(5):
+                self.enemy = Enemy(self)
         else:
-            pass
-        self.player = Player(self, lvl_no)
+            enemies_x_pos = []
+            for i in range(20):
+                ex = random.randrange(SCREEN_WIDTH, self.background.rect.width - SCREEN_WIDTH, 32)
+                enemies_x_pos += [ex]
+            self.enemy_spawn_points = sorted(enemies_x_pos)
+        self.player = Player(self)
 
     def events(self):
         for event in pygame.event.get():
@@ -62,6 +69,14 @@ class Game:
                 return False
             return False
 
+    def spawn_enemies(self):
+        if self.level==0: pass
+        else:
+            spawn_point = self.enemy_spawn_points[0]
+            if SCREEN_WIDTH - self.background.rect.x == spawn_point:
+                self.enemy = Enemy(self)
+                self.enemy_spawn_points.pop(0)
+
     def update(self):
         self.all_sprites.update()
 
@@ -73,9 +88,22 @@ class Game:
 
     def start(self):   # gameplay loop
         while self.playing:
+            self.spawn_enemies()
             self.events()
             self.update()
             self.draw()
+            if not self.player:
+                print("im dead")
+                self.playing = False
+            elif self.level==0:
+                if (len(self.enemies) == 0):
+                    print("No enemies left")
+                    self.playing = False
+            elif self.level==1:
+                if (len(self.enemy_spawn_points) == 0):
+                    print("No enemies left")
+                    self.playing = False
+            else: pass
         self.running = False
 
     def over(self):
@@ -109,8 +137,8 @@ class Game:
 
 game = Game()
 game.title_screen()
-game.new(1)
 while game.running:
+    game.new()
     game.start()
     game.over()
 

@@ -37,9 +37,9 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.sprites = []
-        self.sprites.append(pygame.image.load("Images/Bill/standing.png").convert_alpha())
-        self.sprites.append(pygame.image.load("Images/Bill/running_1.png").convert_alpha())
-        self.sprites.append(pygame.image.load("Images/Bill/running_2.png").convert_alpha())
+        self.sprites.append(pygame.image.load("Images/Player/standing.png").convert_alpha())
+        self.sprites.append(pygame.image.load("Images/Player/running_1.png").convert_alpha())
+        self.sprites.append(pygame.image.load("Images/Player/running_2.png").convert_alpha())
         # Initial player sprite image
         self.current = 0
         self.image = self.sprites[self.current]
@@ -152,8 +152,8 @@ class EnemyNAO(pygame.sprite.Sprite):
         super().__init__()
         self.is_moving = False
         self.sprites = []
-        self.sprites.append(pygame.image.load("Images/NAO/marching_1.png").convert_alpha())
-        self.sprites.append(pygame.image.load("Images/NAO/marching_2.png").convert_alpha())
+        self.sprites.append(pygame.image.load("Images/Enemy/marching_1.png").convert_alpha())
+        self.sprites.append(pygame.image.load("Images/Enemy/marching_2.png").convert_alpha())
         # Initial enemy sprite
         self.current = 0
         self.image = self.sprites[self.current]
