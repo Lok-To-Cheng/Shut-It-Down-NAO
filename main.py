@@ -139,35 +139,53 @@ class Game:
             pygame.display.update()
 
     def intro_screen(self):
-        cont = "Press ENTER to continue"
-        play = "Press ENTER to play"
-        self.cont = self.font.render(cont, 4, YELLOW)
-        self.play = self.font.render(play, 4, YELLOW)
+        cont = "Press K to continue"
+        play = "Press K to play"
+        cont_rendered = self.font.render(cont, 4, WHITE)
+        play_rendered = self.font.render(play, 4, YELLOW)
+        weapon = pygame.image.load("Images/CIRCUIT JAMMER 3000.png")
+        weapon = pygame.transform.scale_by(weapon, 32)
+        weapon_rect = weapon.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 128))
         expressions = Expressions()
         intro_text = ["I can't believe this is happening...",
                       "This is my worst open day exhibition ever!",
-                      "I spent 3 months programming my NAO robots..."
+                      "I spent 3 months programming my NAO robots...",
                       "and now they're are attacking everyone!",
                       "sigh.",
                       "Now I have no choice but to stop them with my",
                       "CIRCUIT JAMMER 3000!!!!!",
                       "It's a very powerful stapler.",
                       "Ready or not, here I come!"]
+        intro_text_rendered = list(map(lambda text: self.font.render(text, 4, WHITE), intro_text))
         self.on_intro = True
+        i = 0
+        self.frame_delay = 0
         while self.on_intro:
             self.screen.fill(BLACK)
+            self.screen.blit(expressions.sprites[i], (32, 32))
+            self.screen.blit(intro_text_rendered[i], (192, 32))
+            if i==6 or i==7:
+                self.screen.blit(weapon, weapon_rect)
+            if i < len(intro_text) - 1:
+                self.screen.blit(cont_rendered, (720, 512))
+            else:
+                self.screen.blit(play_rendered, (720, 512))
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     self.on_intro = False
                     self.running = False
             keys = pygame.key.get_pressed()
-            if keys[K_KP_ENTER]:
-                # next intro slide
-                pass
+            if keys[pygame.K_k]:
+                if self.frame_delay == FRAME_PER_EVENT:
+                    # next intro line
+                    if i < len(intro_text) - 1: i += 1
+                    else: self.on_intro = False
+            self.frame_delay = (self.frame_delay % FRAME_PER_EVENT) + 1
             self.clock.tick(FPS)
             pygame.display.update()
 
     def start(self):   # gameplay loop
+        self.frame_delay = 0
         while self.playing:
             self.events()
             self.update()
@@ -178,7 +196,7 @@ class Game:
             elif (len(self.enemies) == 0):
                 self.playing = False
                 self.win = True
-            else: self.frame_delay = (self.frame_delay % FRAME_PER_STEP) + 1
+            else: self.frame_delay = (self.frame_delay % FRAME_PER_EVENT) + 1
 
     def over(self):
         if self.lose:
@@ -230,6 +248,7 @@ class Game:
 
 game = Game()
 game.title_screen()
+game.intro_screen()
 while game.running:
     game.new()
     game.start()
