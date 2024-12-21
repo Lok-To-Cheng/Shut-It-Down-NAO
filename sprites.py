@@ -52,8 +52,6 @@ class Player(pygame.sprite.Sprite):
         # Player movement and velocity
         self.step = PLAYER_STEP_SIZE[self.level]
         self.x_vel = 0
-        self.frame_per_step = FRAME_PER_STEP
-        self.frame_delay = 0
         # Player hitbox and health
         self.hitbox = self.rect.inflate(PLAYER_HITBOX_SHRINK[self.level])
         self.hitbox.center = np.add(self.rect.center, PLAYER_SPRITE_OFFSET[self.level])
@@ -103,9 +101,8 @@ class Player(pygame.sprite.Sprite):
 
     def update(self):
         self.move()
-        self.frame_delay = (self.frame_delay % self.frame_per_step) + 1   # frame delay before moving
         # Update player position
-        if self.frame_delay == self.frame_per_step:
+        if self.game.frame_delay == FRAME_DELAY:
             if self.is_moving:
                 self.current = (self.current % 2) + 1   # loop running animation
                 scrolling = self.game.scroll(self.x_vel)
@@ -182,7 +179,7 @@ class Enemy(pygame.sprite.Sprite):
         self.height = ENEMY_HEIGHT[self.level]
         if self.level == 0:
             self.x = random.randint(400, SCREEN_WIDTH - self.width)
-        else: self.x = SCREEN_WIDTH
+        else: self.x = random.randint(SCREEN_WIDTH, self.game.background.rect.width - self.width)
         self.y = ENEMY_Y[self.level]
         # Enemy sprite images
         self.spritesheet = pygame.image.load("Images/Enemy/NAO.png").convert_alpha()
@@ -199,8 +196,6 @@ class Enemy(pygame.sprite.Sprite):
         # Enemy movement and speed
         self.step = ENEMY_STEP_SIZE[self.level]
         self.x_vel = -self.step
-        self.frame_per_step = FRAME_PER_STEP
-        self.frame_delay = 0
         # Enemy hitbox
         self.hitbox = self.rect.inflate(ENEMY_HITBOX_SHRINK[self.level])
         self.hitbox.center = self.rect.center
@@ -220,9 +215,8 @@ class Enemy(pygame.sprite.Sprite):
         return damaged_sprite
 
     def update(self):
-        self.frame_delay = (self.frame_delay % self.frame_per_step) + 1  # frame delay before moving
         # Update enemy position
-        if self.frame_delay == self.frame_per_step:
+        if self.game.frame_delay == FRAME_DELAY:
             self.current = (self.current + 1) % 2  # loop marching animation
             self.x += self.x_vel
         # Update enemy sprite image
@@ -241,7 +235,7 @@ class Enemy(pygame.sprite.Sprite):
 
 
 class Button:
-    def __init__(self, x, y, width, height, colour, content=None, text_colour=WHITE, font_scale=1):
+    def __init__(self, x, y, width, height, colour, content=None, text_colour=WHITE, font_scale=1, outline_colour=None, outline_width=0):
         self.x = x
         self.y = y
         self.width = width
@@ -250,13 +244,14 @@ class Button:
         # Button background
         self.image = pygame.Surface((self.width, self.height))
         self.image.fill(self.colour)
-        self.rect = self.image.get_rect()
-        self.rect.topleft = (self.x, self.y)
+        self.rect = self.image.get_rect(center=(self.x, self.y))
         # Button text (optional)
         if content is not None:
             self.text = game_font.render(content, font_scale, text_colour)
             self.text_rect = self.text.get_rect(center=(self.width//2, self.height//2))
             self.image.blit(self.text, self.text_rect)
+        if outline_colour is not None:
+            pygame.draw.rect(self.image, outline_colour, self.rect, outline_width)
 
     def is_pressed(self, pos, pressed):
         if self.rect.collidepoint(pos):

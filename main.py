@@ -22,15 +22,26 @@ class Game:
         pygame.display.set_caption(self.title)
         self.icon = pygame.image.load("icon/NAO Icon.png")  # icon
         pygame.display.set_icon(self.icon)
+        # Frame delay
+        self.frame_delay = 0
         # Game starts at Level 0
-        self.level = 1
-        # Sprite groups
+        self.level = 0
+        # All sprites group
+        self.all_sprites = pygame.sprite.LayeredUpdates()
+        self.backgrounds = pygame.sprite.LayeredUpdates()
+        # Game states
+        self.running = True
+        self.intro = False
+        self.playing = False
+        self.lose = False
+        self.win = False
+
+    def new(self):
+        # Initialise new sprite groups
         self.all_sprites = pygame.sprite.LayeredUpdates()
         self.backgrounds = pygame.sprite.LayeredUpdates()
         self.enemies = pygame.sprite.LayeredUpdates()
         self.attacks = pygame.sprite.LayeredUpdates()
-
-    def new(self):
         self.playing = True   # Player is playing
         # Background, Enemies, Player
         self.background = Background(self, self.level)
@@ -38,11 +49,8 @@ class Game:
             for i in range(5):
                 self.enemy = Enemy(self)
         else:
-            enemies_x_pos = []
             for i in range(20):
-                ex = random.randrange(SCREEN_WIDTH, self.background.rect.width - SCREEN_WIDTH, 32)
-                enemies_x_pos += [ex]
-            self.enemy_spawn_points = sorted(enemies_x_pos)
+                self.enemy = Enemy(self)
         self.player = Player(self)
 
     def events(self):
@@ -51,12 +59,12 @@ class Game:
                 self.playing = False
                 self.running = False
 
-    def scroll(self, speed):
-        if speed < 0:   # scroll to the left
+    def scroll(self, player_speed):
+        if player_speed < 0:   # scroll to the left
             if (self.background.rect.x < 0):
                 if (self.player.x < SCROLL_THRESHOLD):
                     for sprite in self.all_sprites:
-                        sprite.rect.x -= speed
+                        sprite.rect.x -= player_speed
                     return True
                 return False
             return False
@@ -64,18 +72,10 @@ class Game:
             if (self.background.rect.x > SCREEN_WIDTH - self.background.rect.width):
                 if (self.player.x > SCROLL_THRESHOLD):
                     for sprite in self.all_sprites:
-                        sprite.rect.x -= speed
+                        sprite.rect.x -= player_speed
                     return True
                 return False
             return False
-
-    def spawn_enemies(self):
-        if self.level==0: pass
-        else:
-            spawn_point = self.enemy_spawn_points[0]
-            if SCREEN_WIDTH - self.background.rect.x == spawn_point:
-                self.enemy = Enemy(self)
-                self.enemy_spawn_points.pop(0)
 
     def update(self):
         self.all_sprites.update()
@@ -88,35 +88,72 @@ class Game:
 
     def start(self):   # gameplay loop
         while self.playing:
-            self.spawn_enemies()
             self.events()
             self.update()
             self.draw()
-            if not self.player:
+            if self.player not in self.all_sprites:
                 print("im dead")
                 self.playing = False
-            elif self.level==0:
-                if (len(self.enemies) == 0):
-                    print("No enemies left")
-                    self.playing = False
-            elif self.level==1:
-                if (len(self.enemy_spawn_points) == 0):
-                    print("No enemies left")
-                    self.playing = False
-            else: pass
-        self.running = False
+                self.lose = True
+            elif (len(self.enemies) == 0):
+                print("No enemies left")
+                self.playing = False
+                self.win = True
+            else: self.frame_delay = (self.frame_delay % FRAME_PER_STEP) + 1
 
     def over(self):
-        pass
+        if self.lose:
+            self.level_fail()
+        if self.win:
+            self.level_clear()
+
+    def level_fail(self):
+        try_again_button = Button(SCREEN_WIDTH//2, SCREEN_HEIGHT - FLOOR[0] - 72, 432, 144, BLACK, "TRY AGAIN", RED, 8, RED, 8)
+        while self.lose:
+            self.screen.fill(BLACK)
+            game_over = self.font.render("GAME OVER", 16, RED)
+            game_over_rect = game_over.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+            self.screen.blit(game_over, game_over_rect)
+            self.screen.blit(try_again_button.image, try_again_button.rect)
+            mouse_pos = pygame.mouse.get_pos()
+            mouse_pressed = pygame.mouse.get_pressed()
+            for e in pygame.event.get():
+                if e.type == pygame.QUIT:
+                    self.lose = False
+                    self.running = False
+            if try_again_button.is_pressed(mouse_pos, mouse_pressed):
+                self.lose = False
+                print(self.running)
+            pygame.display.update()
+
+    def level_clear(self):
+        next_lvl_button = Button(SCREEN_WIDTH // 2, SCREEN_HEIGHT - FLOOR[0] - 72, 432, 144, WHITE, "NEXT LEVEL", BLACK, 8, BLACK, 8)
+        while self.win:
+            self.screen.fill(WHITE)
+            you_win = self.font.render("YOU WIN!", 16, BLACK)
+            you_win_rect = you_win.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+            self.screen.blit(you_win, you_win_rect)
+            self.screen.blit(next_lvl_button.image, next_lvl_button.rect)
+            mouse_pos = pygame.mouse.get_pos()
+            mouse_pressed = pygame.mouse.get_pressed()
+            for e in pygame.event.get():
+                if e.type == pygame.QUIT:
+                    self.win = False
+                    self.running = False
+            if next_lvl_button.is_pressed(mouse_pos, mouse_pressed):
+                self.win = False
+                self.level += 1
+                print(self.running)
+            pygame.display.update()
 
     def title_screen(self):
-        intro = True
+        self.intro = True
         self.background = Background(self)
         title_row1 = self.font.render("Shut It Down", 8)
         title_row2 = self.font.render("NAO", 16, RED)
         hint = self.font.render("CLICK YELLOW DOOR TO START", 4, YELLOW)
-        door_button = Button(768, 496, 64, 80, YELLOW)
-        while intro:
+        door_button = Button(800, 536, 64, 80, YELLOW)
+        while self.intro:
             self.screen.fill(BLACK)
             self.screen.blit(self.background.image, (0, 0))
             mouse_pos = pygame.mouse.get_pos()
@@ -128,10 +165,10 @@ class Game:
             self.screen.blit(door_button.image, door_button.rect)
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
-                    intro = False
+                    self.intro = False
                     self.running = False
             if door_button.is_pressed(mouse_pos, mouse_pressed):
-                intro = False
+                self.intro = False
             self.clock.tick(FPS)
             pygame.display.update()
 

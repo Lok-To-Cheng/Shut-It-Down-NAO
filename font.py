@@ -39,11 +39,13 @@ class Font:
                 x_offset += self.space_width + self.spacing
         text_img = pygame.Surface((x_offset, self.height))
         x_offset = 0
-        for char_img in char_list:
+        while len(char_list) > 0:
+            char_img = char_list.pop(0)
             text_img.blit(char_img, (x_offset, 0))
             x_offset += char_img.get_width() + self.spacing
         text_img.set_colorkey(BLACK)
-        text_img_coloured = apply_colour(text_img, colour)
+        text_img_copy = text_img.copy().convert_alpha()
+        text_img_coloured = apply_colour(text_img_copy, colour)
         text_img_scaled = pygame.transform.scale_by(text_img_coloured, scale)
         return text_img_scaled
 
