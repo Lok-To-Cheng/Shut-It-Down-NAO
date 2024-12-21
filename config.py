@@ -1,5 +1,6 @@
 SCREEN_WIDTH, SCREEN_HEIGHT = 1024, 576   # screen dimensions
 FPS = 60
+NUM_LEVELS = 2
 GRAVITY = [1, 2]
 
 # Level settings
@@ -13,6 +14,7 @@ FRAME_DELAY = 3
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
+PURPLE = (128, 0, 255)
 WHITE = (255, 255, 255)
 
 # Player

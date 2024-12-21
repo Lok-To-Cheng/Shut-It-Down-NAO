@@ -22,7 +22,7 @@ class Font:
                 current_char_width = 0
             else:
                 current_char_width += 1
-        self.space_width = self.characters["A"].get_height()
+        self.space_width = self.characters["A"].get_width()
         self.height = self.characters["A"].get_height()
         self.space_img = pygame.Surface(self.characters["A"].get_size())
 
@@ -37,6 +37,7 @@ class Font:
             else:
                 char_list += [self.space_img]
                 x_offset += self.space_width + self.spacing
+        x_offset -= self.spacing
         text_img = pygame.Surface((x_offset, self.height))
         x_offset = 0
         while len(char_list) > 0:

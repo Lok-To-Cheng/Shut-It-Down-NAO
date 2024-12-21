@@ -52,11 +52,13 @@ class Player(pygame.sprite.Sprite):
         # Player movement and velocity
         self.step = PLAYER_STEP_SIZE[self.level]
         self.x_vel = 0
-        # Player hitbox and health
+        # Player hitbox
         self.hitbox = self.rect.inflate(PLAYER_HITBOX_SHRINK[self.level])
         self.hitbox.center = np.add(self.rect.center, PLAYER_SPRITE_OFFSET[self.level])
         self.knockback = -self.step
+        # Player status
         self.hp = 10
+        self.staples_remaining = 30   # 30 staples to use
         self.staple_hue = 0   # fancy staples
 
     def move(self):
@@ -85,6 +87,7 @@ class Player(pygame.sprite.Sprite):
             staple = Bullet(self.game, self.level, self, shooting_point_x, shooting_point_y, self.staple_hue)
             self.game.all_sprites.add(staple)
             self.game.attacks.add(staple)
+            self.staples_remaining -= 1
             self.staple_hue = (self.staple_hue + 10) % 360
 
     def is_hit(self):
@@ -110,7 +113,8 @@ class Player(pygame.sprite.Sprite):
                     self.x += self.x_vel
             else:
                 self.current = 0
-            self.shoot()
+            if self.staples_remaining > 0:
+                self.shoot()
         # Update player sprite image
         if self.is_facing_left:
             self.image = pygame.transform.flip(self.sprites[self.current], True, False)
@@ -251,7 +255,8 @@ class Button:
             self.text_rect = self.text.get_rect(center=(self.width//2, self.height//2))
             self.image.blit(self.text, self.text_rect)
         if outline_colour is not None:
-            pygame.draw.rect(self.image, outline_colour, self.rect, outline_width)
+            self.outline_rect = self.image.get_rect()
+            pygame.draw.rect(self.image, outline_colour, self.outline_rect, outline_width)
 
     def is_pressed(self, pos, pressed):
         if self.rect.collidepoint(pos):
