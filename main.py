@@ -3,6 +3,8 @@ import pygame
 import sys
 import random
 
+from pygame import K_KP_ENTER
+
 # PYTHON FILES
 from config import *
 from sprites import *
@@ -20,7 +22,7 @@ class Game:
         # Title and icon
         self.title = "Shut It Down NAO!"  # title
         pygame.display.set_caption(self.title)
-        self.icon = pygame.image.load("icon/NAO Icon.png")  # icon
+        self.icon = pygame.image.load("Images/Icon.png")  # icon
         pygame.display.set_icon(self.icon)
         # Frame delay
         self.frame_delay = 0
@@ -32,7 +34,7 @@ class Game:
         # Game states
         self.running = True
         self.on_title = False
-        self.intro = False
+        self.on_intro = False
         self.playing = False
         self.lose = False
         self.win = False
@@ -113,6 +115,7 @@ class Game:
         self.background = Background(self)
         title_row1 = self.font.render("Shut It Down", 8)
         title_row2 = self.font.render("NAO", 16, RED)
+        author = self.font.render("made by Jasper Cheng", 4, GREY)
         hint = self.font.render("CLICK YELLOW DOOR TO START", 4, YELLOW)
         door_button = Button(800, 536, 64, 80, YELLOW)
         while self.on_title:
@@ -122,7 +125,8 @@ class Game:
             mouse_pressed = pygame.mouse.get_pressed()
             # Draw screen
             self.screen.blit(title_row1, (32, 32))
-            self.screen.blit(title_row2, (32, 128))
+            self.screen.blit(title_row2, (32, 108))
+            self.screen.blit(author, (32, 216))
             self.screen.blit(hint, (32, 512))
             self.screen.blit(door_button.image, door_button.rect)
             for e in pygame.event.get():
@@ -131,6 +135,35 @@ class Game:
                     self.running = False
             if door_button.is_pressed(mouse_pos, mouse_pressed):
                 self.on_title = False
+            self.clock.tick(FPS)
+            pygame.display.update()
+
+    def intro_screen(self):
+        cont = "Press ENTER to continue"
+        play = "Press ENTER to play"
+        self.cont = self.font.render(cont, 4, YELLOW)
+        self.play = self.font.render(play, 4, YELLOW)
+        expressions = Expressions()
+        intro_text = ["I can't believe this is happening...",
+                      "This is my worst open day exhibition ever!",
+                      "I spent 3 months programming my NAO robots..."
+                      "and now they're are attacking everyone!",
+                      "sigh.",
+                      "Now I have no choice but to stop them with my",
+                      "CIRCUIT JAMMER 3000!!!!!",
+                      "It's a very powerful stapler.",
+                      "Ready or not, here I come!"]
+        self.on_intro = True
+        while self.on_intro:
+            self.screen.fill(BLACK)
+            for e in pygame.event.get():
+                if e.type == pygame.QUIT:
+                    self.on_intro = False
+                    self.running = False
+            keys = pygame.key.get_pressed()
+            if keys[K_KP_ENTER]:
+                # next intro slide
+                pass
             self.clock.tick(FPS)
             pygame.display.update()
 

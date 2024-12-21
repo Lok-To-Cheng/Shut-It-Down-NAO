@@ -21,6 +21,24 @@ class Background(pygame.sprite.Sprite):
         self.image = pygame.transform.scale_by(image_src, height_ratio)
         self.rect = self.image.get_rect()
 
+class Expressions(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.width = 16
+        self.height = 16
+        self.x = 64
+        self.y = 64
+        # Player sprite images
+        self.spritesheet = pygame.image.load("Images/Player/Expressions.png").convert_alpha()
+        height_ratio = self.height // self.spritesheet.get_height()
+        self.spritesheet = pygame.transform.scale_by(self.spritesheet, height_ratio)
+        sprite_count = self.spritesheet.get_width() // self.width
+        self.sprites = []
+        for i in range(sprite_count):
+            sprite_image = clip(self.spritesheet, self.width * i, 0, self.width, self.height)
+            sprite_image_scaled = pygame.transform.scale_by(sprite_image, 8)
+            self.sprites.append(sprite_image_scaled)
+
 class Player(pygame.sprite.Sprite):
     def __init__(self, game):
         self.game = game
@@ -209,7 +227,7 @@ class Enemy(pygame.sprite.Sprite):
     def is_hit(self):
         for bullet in self.game.attacks:
             if self.hitbox.colliderect(bullet.rect):
-                if bullet.goes_left:
+                if bullet.goes_left:   # just in case
                     self.knockback = -self.step
                 return True
         return False
